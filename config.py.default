@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+
+
+# default config
+class BaseConfig(object):
+    DEBUG = False
+
+
+class TestConfig(BaseConfig):
+    DEBUG = True
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+
+
+class DevelopmentConfig(BaseConfig):
+    DEBUG = True
+
+
+class ProductionConfig(BaseConfig):
+    DEBUG = False
