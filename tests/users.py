@@ -3,6 +3,7 @@
 """Unit tests for users module."""
 
 from tests.base import BaseTestCase
+from flask.ext.login import current_user
 
 
 class UsersTestCase(BaseTestCase):
@@ -33,3 +34,17 @@ class UsersTestCase(BaseTestCase):
         response = self.client.get('/users/edit', content_type='html/text')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Edit your details', response.data)
+
+    def test_logout(self):
+        """Test logout mechanism."""
+        with self.client:
+            self.client.post(
+                '/users/login',
+                data=dict(email="hammy@spiresoftware.com.au",
+                          password="password"),
+                follow_redirects=True
+            )
+            response = self.client.get('/users/logout', follow_redirects=True)
+            # todo: change this to a flash message
+            self.assertIn(b'Login', response.data)
+            self.assertFalse(current_user.is_active())

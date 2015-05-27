@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Links views."""
+"""links/views.py: Links views."""
 
 
 from flask import render_template, Blueprint, request
+from flask.ext.login import login_required
 
 links_blueprint = Blueprint(
     'links', __name__,
@@ -12,6 +13,7 @@ links_blueprint = Blueprint(
 
 
 @links_blueprint.route('/links', methods=['GET', 'POST'])
+@login_required
 def list():
     """Page with list of links and a form to add links."""
     if request.method == "POST":
@@ -19,8 +21,8 @@ def list():
 
     return render_template('links.html')
 
-
-@links_blueprint.route('/<path:path>')
-def redirect(path):
-    """Redirector, and logger of links."""
-    return path
+#
+# @links_blueprint.route('/<path:path>')
+# def redirect(path):
+#     """Redirector, and logger of links."""
+#     return path

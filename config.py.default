@@ -1,23 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""config.py.default: default config file."""
 
-import os
 
-
-# default config
 class BaseConfig(object):
-	DEBUG = False
+
+    """Base Flask config variabels."""
+
+    DEBUG = False
+    SECRET_KEY = 'REPLACE WITH VERY SECRET KEY'
 
 
 class TestConfig(BaseConfig):
-	DEBUG = True
-	TESTING = True
-	SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+
+    """Test Flask config variabels."""
+
+    DEBUG = True
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 
 class DevelopmentConfig(BaseConfig):
-	DEBUG = True
+
+    """Development Flask config variabels."""
+
+    DEBUG = True
 
 
 class ProductionConfig(BaseConfig):
-	DEBUG = False
+
+    """Production Flask config variabels."""
+
+    DEBUG = False

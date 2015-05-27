@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""User views."""
+"""users/views.py: User views."""
 
-from flask import render_template, Blueprint, request
+from flask import render_template, Blueprint, request, flash, redirect,\
+    url_for
+from shortener.models import User
+from flask.ext.login import login_user, login_required, logout_user
+from shortener import bcrypt
 
 users_blueprint = Blueprint(
     'users', __name__,
@@ -13,16 +17,29 @@ users_blueprint = Blueprint(
 @users_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
     """Login route."""
+    error = None
     if request.method == "POST":
-        pass
+        user = User.query.filter_by(email=request.form['email']).first()
+        if user is not None and bcrypt.check_password_hash(
+            user.password, request.form['password']
+        ):
+            login_user(user)
+            flash('You were logged in. Go Crazy.')
+            return redirect(url_for('links.list'))
 
-    return render_template('login.html')
+        else:
+            error = 'Invalid username or password.'
+
+    return render_template('login.html', error=error)
 
 
 @users_blueprint.route('/logout')
+@login_required
 def logout():
     """Logout route."""
-    pass
+    logout_user()
+    flash('You were logged out')
+    return redirect(url_for('users.login'))
 
 
 @users_blueprint.route('/register', methods=['GET', 'POST'])
