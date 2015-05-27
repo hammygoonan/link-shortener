@@ -33,3 +33,10 @@ def forgot_password():
 		pass
 
 	return render_template('forgot_password.html')
+
+@users_blueprint.route('/edit', methods=['GET', 'POST'])
+def edit():
+	if request.method == "POST":
+		pass
+
+	return render_template('edit.html')

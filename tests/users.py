@@ -20,3 +20,8 @@ class UsersTestCase(BaseTestCase):
 		response = self.client.get('/users/forgot_password', content_type='html/text')
 		self.assertEqual(response.status_code, 200)
 		self.assertIn(b'Forgot Password', response.data)
+
+	def test_edit_page(self):
+		response = self.client.get('/users/edit', content_type='html/text')
+		self.assertEqual(response.status_code, 200)
+		self.assertIn(b'Edit your details', response.data)
