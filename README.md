@@ -1,2 +1,2 @@
 # Link Shortener
-A very basic link shortening service built in Python using (Flask)[flask.pocoo.org]
+A very basic link shortening service built in Python using [Flask](flask.pocoo.org)
