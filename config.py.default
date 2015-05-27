@@ -6,18 +6,18 @@ import os
 
 # default config
 class BaseConfig(object):
-    DEBUG = False
+	DEBUG = False
 
 
 class TestConfig(BaseConfig):
-    DEBUG = True
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+	DEBUG = True
+	TESTING = True
+	SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 
 class DevelopmentConfig(BaseConfig):
-    DEBUG = True
+	DEBUG = True
 
 
 class ProductionConfig(BaseConfig):
-    DEBUG = False
+	DEBUG = False

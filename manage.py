@@ -4,17 +4,17 @@
 import unittest
 import os
 from flask.ext.script import Manager
-from shortener.app import app, db
+from shortener import app, db
 
 manager = Manager(app)
 
 
 @manager.command
 def test():
-    """Runs unit tests."""
+	"""Runs unit tests."""
 
-    tests = unittest.TestLoader().discover('tests/', pattern='*.py')
-    unittest.TextTestRunner(verbosity=2).run(tests)
+	tests = unittest.TestLoader().discover('', pattern='*.py')
+	unittest.TextTestRunner(verbosity=2).run(tests)
 
 if __name__ == '__main__':
-    manager.run()
+	manager.run()
