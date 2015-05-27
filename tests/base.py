@@ -4,17 +4,22 @@
 from flask.ext.testing import TestCase
 from shortener import app, db
 
+
 class BaseTestCase(TestCase):
-	"""A base test case."""
 
-	def create_app(self):
-		app.config.from_object('config.TestConfig')
-		return app
+    """A base test case."""
 
-	def setUp(self):
-		db.create_all()
-		db.session.commit()
+    def create_app(self):
+        """Create app for tests.""""
+        app.config.from_object('config.TestConfig')
+        return app
 
-	def tearDown(self):
-		db.session.remove()
-		db.drop_all()
+    def setUp(self):
+        """Setup tests."""
+        db.create_all()
+        db.session.commit()
+
+    def tearDown(self):
+        """Tear down tests."""
+        db.session.remove()
+        db.drop_all()

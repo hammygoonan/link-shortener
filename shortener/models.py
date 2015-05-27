@@ -1,32 +1,45 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Models."""
 
 from shortener import db
 
 
 class User(db.Model):
-	__tablename__ = "users"
 
-	id = db.Column(db.Integer, primary_key=True)
-	email = db.Column(db.String)
-	password = db.Column(db.String)
+    """User model."""
 
-	def __init__(self, email, password):
-		self.email = email
-		self.password = password
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String)
+    password = db.Column(db.String)
+    invite_code = db.Column(db.String)
+    reset_code = db.Column(db.String)
+
+    def __init__(self, email, password, invite_code=None, reset_code=None):
+        """Initialise model."""
+        self.email = email
+        self.password = password
+        self.invite_code = invite_code
+        self.reset_code = reset_code
 
 
 class Link(db.Model):
-	__tablename__ = "links"
 
-	id = db.Column(db.Integer, primary_key=True)
-	url = db.Column(db.String)
-	user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-	status = db.Column(db.String)
+    """Link model."""
 
-	user = db.relationship('User')
+    __tablename__ = "links"
 
-	def __init__(self, url, user, status):
-		self.url = url
-		self.user = user
-		self.status = status
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    status = db.Column(db.String)
+
+    user = db.relationship('User')
+
+    def __init__(self, url, user, status):
+        """Initialise model."""
+        self.url = url
+        self.user = user
+        self.status = status

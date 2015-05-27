@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Module init file. Runs application."""
 
-from flask import Flask, render_template
+from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
 
@@ -16,4 +17,4 @@ app.register_blueprint(users_blueprint, url_prefix='/users')
 app.register_blueprint(links_blueprint)
 
 if __name__ == "__main__":
-	app.run()
+    app.run()
