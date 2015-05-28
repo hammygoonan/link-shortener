@@ -17,17 +17,4 @@ class UsersTestCase(BaseTestCase):
             follow_redirects=True
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Login', response.data)
-
-    def test_links_page_logged_in(self):
-        """Test /links route when loggen in."""
-        response = self.client.get(
-            '/users/login', content_type='html/text',
-            follow_redirects=True,
-            data=dict(
-                email='hammy@spiresoftware.com.au',
-                password='password'
-            ),
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Link', response.data)
+        self.assertIn(b'Please login to view that page.', response.data)

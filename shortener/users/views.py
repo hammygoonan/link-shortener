@@ -17,20 +17,18 @@ users_blueprint = Blueprint(
 @users_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
     """Login route."""
-    error = None
     if request.method == "POST":
         user = User.query.filter_by(email=request.form['email']).first()
         if user is not None and bcrypt.check_password_hash(
             user.password, request.form['password']
         ):
             login_user(user)
-            flash('You were logged in. Go Crazy.')
             return redirect(url_for('links.list'))
 
         else:
-            error = 'Invalid username or password.'
+            flash('Invalid username or password.')
 
-    return render_template('login.html', error=error)
+    return render_template('login.html')
 
 
 @users_blueprint.route('/logout')
@@ -48,7 +46,7 @@ def register():
     if request.method == "POST":
         pass
 
-    return render_template('login.html')
+    return render_template('register.html')
 
 
 @users_blueprint.route('/forgot_password', methods=['GET', 'POST'])
