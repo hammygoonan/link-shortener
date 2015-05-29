@@ -86,3 +86,92 @@ class UsersTestCase(BaseTestCase):
         """Ensure that logout page requires user login."""
         response = self.client.get('/users/logout', follow_redirects=True)
         self.assertIn(b'Please login to view that page.', response.data)
+
+    def test_user_can_change_email(self):
+        with self.client:
+            response = self.client.post(
+                '/users/login',
+                data={
+                    'email': 'hammy@spiresoftware.com.au',
+                    'password': 'password'
+                },
+                follow_redirects=True
+            )
+            self.assertTrue(current_user.email == 'hammy@spiresoftware.com.au')
+            response = self.client.get(
+                '/users/edit',
+                data={
+                    'email': 'hammy2@spiresoftware.com.au',
+                    'password': ''
+                },
+                follow_redirects=True
+            )
+            # check email has been updated
+            self.assertTrue(current_user.email ==
+                            'hammy2@spiresoftware.com.au')
+            # make sure password hasn't been updated
+            user_password = bcrypt.check_password_hash(
+                current_user.password, 'password'
+            )
+            self.assertTrue(user_password)
+            # check flash message
+            self.assertIn(b'Your details have been updated', response.data)
+
+    def test_user_can_change_password(self):
+        with self.client:
+            response = self.client.post(
+                '/users/login',
+                data={
+                    'email': 'hammy@spiresoftware.com.au',
+                    'password': 'password'
+                },
+                follow_redirects=True
+            )
+            user_password = bcrypt.check_password_hash(
+                current_user.password, 'password'
+            )
+            self.assertTrue(user_password)
+            response = self.client.get(
+                '/users/edit',
+                data={
+                    'email': 'hammy@spiresoftware.com.au',
+                    'password': 'new_password'
+                },
+                follow_redirects=True
+            )
+            # check password is updated
+            new_password = bcrypt.check_password_hash(
+                current_user.password, 'password'
+            )
+            self.assertTrue(current_user.password)
+            # check email remains the same
+            self.assertTrue(current_user.email ==
+                            'hammy@spiresoftware.com.au')
+            # check flash message
+            self.assertIn(b'Your details have been updated', response.data)
+
+    def test_user_cannt_change_email_to_email_already_taken(self):
+        with self.client:
+            response = self.client.post(
+                '/users/login',
+                data={
+                    'email': 'hammy@spiresoftware.com.au',
+                    'password': 'password'
+                },
+                follow_redirects=True
+            )
+            self.assertTrue(current_user.email == 'hammy@spiresoftware.com.au')
+            response = self.client.get(
+                '/users/edit',
+                data={
+                    'email': 'test@spiresoftware.com.au',
+                    'password': ''
+                },
+                follow_redirects=True
+            )
+            # check email has not been updated
+            self.assertTrue(current_user.email ==
+                            'hammy@spiresoftware.com.au')
+            # display flash message
+            self.assertIn(b'That email address is already in use.',
+                          response.data)
