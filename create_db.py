@@ -6,7 +6,10 @@
 from shortener import db
 from shortener.models import User, Invitation
 
-db.create_all()
-db.session.add(User('hammy@spiresoftware.com.au', 'password'))
-db.session.add(Invitation('hammy2@spiresoftware.com.au', 'invite_code'))
-db.session.commit()
+
+def create_db():
+    """Create database for tests."""
+    db.create_all()
+    db.session.add(User('hammy@spiresoftware.com.au', 'password'))
+    db.session.add(Invitation('hammy2@spiresoftware.com.au', 'invite_code'))
+    db.session.commit()

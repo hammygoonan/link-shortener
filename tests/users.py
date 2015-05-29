@@ -68,29 +68,21 @@ class UsersTestCase(BaseTestCase):
         self.assertIn(b'Edit your details', response.data)
 
     def test_logout(self):
+        """Test user can logout."""
         with self.client:
-            self.client.post(
+            response = self.client.post(
                 '/users/login',
-                data=dict(username="hammy@spiresoftware.com.au",
-                          password="password"),
+                data={
+                    'email': 'hammy@spiresoftware.com.au',
+                    'password': 'password'
+                },
                 follow_redirects=True
             )
             response = self.client.get('/users/logout', follow_redirects=True)
             self.assertIn(b'You were logged out', response.data)
             self.assertFalse(current_user.is_active())
 
-    # Ensure that logout page requires user login
     def test_logout_route_requires_login(self):
+        """Ensure that logout page requires user login."""
         response = self.client.get('/users/logout', follow_redirects=True)
         self.assertIn(b'Please login to view that page.', response.data)
-
-    # def test_logout(self):
-    #     """Test logout mechanism."""
-    #     with self.client:
-    #         response = self.client.post(
-    #             '/users/login',
-    #             data=dict(email="hammy@spiresoftware.com.au",
-    #                       password="password"),
-    #             follow_redirects=True
-    #         )
-    #         self.assertIn(b'You were logged out', response.data)

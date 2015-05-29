@@ -3,6 +3,7 @@
 
 from flask.ext.testing import TestCase
 from shortener import app, db
+from create_db import create_db
 
 
 class BaseTestCase(TestCase):
@@ -16,8 +17,9 @@ class BaseTestCase(TestCase):
 
     def setUp(self):
         """Setup tests."""
-        db.create_all()
-        db.session.commit()
+        # db.create_all()
+        # db.session.commit()
+        create_db()
 
     def tearDown(self):
         """Tear down tests."""
