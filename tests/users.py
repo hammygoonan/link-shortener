@@ -4,7 +4,7 @@
 
 from tests.base import BaseTestCase
 from flask.ext.login import current_user
-from shortener import app
+from shortener import bcrypt
 from flask import url_for
 
 
@@ -63,9 +63,18 @@ class UsersTestCase(BaseTestCase):
 
     def test_edit_page(self):
         """Test user edit page."""
-        response = self.client.get('/users/edit')
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Edit your details', response.data)
+        with self.client:
+            self.client.post(
+                '/users/login',
+                data={
+                    'email': 'hammy@spiresoftware.com.au',
+                    'password': 'password'
+                },
+                follow_redirects=True
+            )
+            response = self.client.get('/users/edit')
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'Edit your details', response.data)
 
     def test_logout(self):
         """Test user can logout."""
@@ -88,6 +97,7 @@ class UsersTestCase(BaseTestCase):
         self.assertIn(b'Please login to view that page.', response.data)
 
     def test_user_can_change_email(self):
+        """Test the user can update email."""
         with self.client:
             response = self.client.post(
                 '/users/login',
@@ -98,7 +108,7 @@ class UsersTestCase(BaseTestCase):
                 follow_redirects=True
             )
             self.assertTrue(current_user.email == 'hammy@spiresoftware.com.au')
-            response = self.client.get(
+            response = self.client.post(
                 '/users/edit',
                 data={
                     'email': 'hammy2@spiresoftware.com.au',
@@ -110,14 +120,15 @@ class UsersTestCase(BaseTestCase):
             self.assertTrue(current_user.email ==
                             'hammy2@spiresoftware.com.au')
             # make sure password hasn't been updated
-            user_password = bcrypt.check_password_hash(
+            password = bcrypt.check_password_hash(
                 current_user.password, 'password'
             )
-            self.assertTrue(user_password)
+            self.assertTrue(password)
             # check flash message
             self.assertIn(b'Your details have been updated', response.data)
 
     def test_user_can_change_password(self):
+        """Test that user can change password."""
         with self.client:
             response = self.client.post(
                 '/users/login',
@@ -131,7 +142,7 @@ class UsersTestCase(BaseTestCase):
                 current_user.password, 'password'
             )
             self.assertTrue(user_password)
-            response = self.client.get(
+            response = self.client.post(
                 '/users/edit',
                 data={
                     'email': 'hammy@spiresoftware.com.au',
@@ -141,16 +152,17 @@ class UsersTestCase(BaseTestCase):
             )
             # check password is updated
             new_password = bcrypt.check_password_hash(
-                current_user.password, 'password'
+                current_user.password, 'new_password'
             )
-            self.assertTrue(current_user.password)
+            self.assertTrue(new_password)
             # check email remains the same
             self.assertTrue(current_user.email ==
                             'hammy@spiresoftware.com.au')
             # check flash message
             self.assertIn(b'Your details have been updated', response.data)
 
-    def test_user_cannt_change_email_to_email_already_taken(self):
+    def test_user_unique_when_editing(self):
+        """Test that email being edited is unique and email is not updated."""
         with self.client:
             response = self.client.post(
                 '/users/login',
@@ -161,7 +173,7 @@ class UsersTestCase(BaseTestCase):
                 follow_redirects=True
             )
             self.assertTrue(current_user.email == 'hammy@spiresoftware.com.au')
-            response = self.client.get(
+            response = self.client.post(
                 '/users/edit',
                 data={
                     'email': 'test@spiresoftware.com.au',

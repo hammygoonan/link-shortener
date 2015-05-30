@@ -5,8 +5,10 @@
 from flask import render_template, Blueprint, request, flash, redirect,\
     url_for
 from shortener.models import User
-from flask.ext.login import login_user, login_required, logout_user
-from shortener import bcrypt
+from flask.ext.login import login_user, login_required, logout_user,\
+    current_user
+from shortener import db, bcrypt
+from shortener.models import User
 
 users_blueprint = Blueprint(
     'users', __name__,
@@ -59,9 +61,24 @@ def forgot_password():
 
 
 @users_blueprint.route('/edit', methods=['GET', 'POST'])
+@login_required
 def edit():
     """Edit user route."""
     if request.method == "POST":
-        pass
-
-    return render_template('edit.html')
+        user = User.query.filter_by(email=request.form['email']).first()
+        # if email is already taken
+        if user and user.id != current_user.id:
+            flash('That email address is already in use.')
+        else:
+            user = User.query.get(current_user.id)
+            # update password if changed
+            if request.form['password'] != '':
+                user.password = bcrypt.generate_password_hash(
+                    request.form['password']
+                )
+            # update email if changed
+            if current_user.email != request.form['email']:
+                user.email = request.form['email']
+            db.session.commit()
+            flash('Your details have been updated')
+    return render_template('edit.html', user=current_user)
