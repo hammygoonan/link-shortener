@@ -227,3 +227,42 @@ class UsersTestCase(BaseTestCase):
             )
             self.assertIn(b'Please ensure you fill in all fields.',
                           response.data)
+
+    def test_user_can_create_account(self):
+        """Test user can create an account."""
+        # wrong code
+        response = self.client.post(
+            '/users/register',
+            data={
+                'email': 'hammy2@spiresoftware.com.au',
+                'password': 'password',
+                'invite': 'invite'
+            },
+            follow_redirects=True
+        )
+        self.assertIn('Sorry, we don&#39;t have a invite that matches that email '
+                      'address and invitation code.', str(response.data))
+        # email wrong
+        response = self.client.post(
+            '/users/register',
+            data={
+                'email': 'other@spiresoftware.com.au',
+                'password': 'password',
+                'invite': 'invite_code'
+            },
+            follow_redirects=True
+        )
+        self.assertIn('Sorry, we don&#39;t have a invite that matches that email '
+                      'address and invitation code.', str(response.data))
+        # correct details
+        response = self.client.post(
+            '/users/register',
+            data={
+                'email': 'hammy2@spiresoftware.com.au',
+                'password': 'password',
+                'invite': 'invite_code'
+            },
+            follow_redirects=True
+        )
+        self.assertIn('Thanks for signing up! Please login below.',
+                      str(response.data))

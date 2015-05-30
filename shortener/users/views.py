@@ -8,7 +8,7 @@ from shortener.models import User
 from flask.ext.login import login_user, login_required, logout_user,\
     current_user
 from shortener import db, bcrypt
-from shortener.models import Invitation
+from shortener.models import Invitation, User
 
 users_blueprint = Blueprint(
     'users', __name__,
@@ -53,6 +53,20 @@ def register():
         ):
             flash('Please ensure you fill in all fields.')
             return render_template('register.html')
+        else:
+            invite = Invitation.query.filter_by(
+                email=request.form['email']
+            ).first()
+            if invite and invite.code == request.form.get('invite'):
+                db.session.add(
+                    User(request.form['email'], request.form['password'])
+                )
+                db.session.commit()
+                flash('Thanks for signing up! Please login below.')
+                return redirect(url_for('users.login'))
+            else:
+                flash('Sorry, we don\'t have a invite that matches that email '
+                      'address and invitation code.')
 
     return render_template('register.html')
 
