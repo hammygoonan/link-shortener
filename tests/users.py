@@ -187,3 +187,43 @@ class UsersTestCase(BaseTestCase):
             # display flash message
             self.assertIn(b'That email address is already in use.',
                           response.data)
+
+    def test_user_cannt_register_without_all_fields(self):
+        """Check all fields are required for user registration."""
+        with self.client:
+            # check invite required
+            response = self.client.post(
+                '/users/register',
+                data={
+                    'email': 'hammy2@spiresoftware.com.au',
+                    'password': 'password',
+                    'invite': ''
+                },
+                follow_redirects=True
+            )
+            self.assertIn(b'Please ensure you fill in all fields.',
+                          response.data)
+            # check password required
+            response = self.client.post(
+                '/users/register',
+                data={
+                    'email': 'hammy2@spiresoftware.com.au',
+                    'password': '',
+                    'invite': 'invite_code'
+                },
+                follow_redirects=True
+            )
+            self.assertIn(b'Please ensure you fill in all fields.',
+                          response.data)
+            # check email required
+            response = self.client.post(
+                '/users/register',
+                data={
+                    'email': '',
+                    'password': 'password',
+                    'invite': 'invite_code'
+                },
+                follow_redirects=True
+            )
+            self.assertIn(b'Please ensure you fill in all fields.',
+                          response.data)

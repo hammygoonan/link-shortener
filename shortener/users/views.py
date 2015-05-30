@@ -8,7 +8,7 @@ from shortener.models import User
 from flask.ext.login import login_user, login_required, logout_user,\
     current_user
 from shortener import db, bcrypt
-from shortener.models import User
+from shortener.models import Invitation
 
 users_blueprint = Blueprint(
     'users', __name__,
@@ -46,7 +46,13 @@ def logout():
 def register():
     """Register route."""
     if request.method == "POST":
-        pass
+        if(
+            not request.form.get('email') or
+            not request.form.get('password') or
+            not request.form.get('invite')
+        ):
+            flash('Please ensure you fill in all fields.')
+            return render_template('register.html')
 
     return render_template('register.html')
 
