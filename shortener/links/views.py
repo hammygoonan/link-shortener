@@ -3,9 +3,13 @@
 """links/views.py: Links views."""
 
 
-from flask import render_template, Blueprint, request, redirect, url_for
+import re
+from flask import render_template, Blueprint, request, redirect, url_for,\
+    flash
 from flask.ext.login import login_required, current_user
+from shortener import app, db, random_str
 from shortener.models import Link
+from datetime import datetime
 
 links_blueprint = Blueprint(
     'links', __name__,
@@ -25,10 +29,47 @@ def list():
 @login_required
 def add():
     """Page with list of links and a form to add links."""
+    link = None
     if request.method == "POST":
-        pass
+        url = request.form.get('url')
+        if not url:
+            flash('Forget to add a link?')
+            return render_template('add.html')
+        # validate url with Django url checker
+        url_regex = re.compile(
+            r'^(?:http|ftp)s?://'  # http:// or https://
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|'
+            r'[A-Z0-9-]{2,}\.?)|'  # domain...
+            r'localhost|'  # localhost...
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+            r'(?::\d+)?'  # optional port
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+        if not re.match(url_regex, url):
+            flash('That link isn\'t formatted correctly.')
+            return render_template('add.html')
 
-    return render_template('add.html')
+        # check if that user has already saved this link
+        pre_existing = Link.query.filter_by(
+            user_id=current_user.id, url=url).first()
+        if pre_existing:
+            flash('This link has already been added by you in the past.')
+            link = pre_existing
+        else:
+            # get unique slug
+            unique_slug = None
+            while not unique_slug:
+                slug = random_str(6)
+                if not Link.query.filter_by(slug=slug).first():
+                    unique_slug = slug
+
+            # add link
+            link = Link(url, slug, current_user)
+            db.session.add(link)
+            db.session.commit()
+            flash('Your link was added.')
+
+    return render_template('add.html', link=link)
+
 
 @links_blueprint.route('/')
 def home():
@@ -39,4 +80,11 @@ def home():
 @links_blueprint.route('/<path:path>')
 def redirect_link(path):
     """Redirector, and logger of links."""
-    return path
+    link = Link.query.filter_by(slug=path).first_or_404()
+    log_entry = '{}\t{}\t{}\t{}\n'.format(
+        datetime.now(), link.url, request.remote_addr,
+        request.headers.get('User-Agent'))
+
+    with open(app.config.get('LOG_FILE'), 'a') as f:
+        f.write(log_entry)
+    return redirect(link.url)

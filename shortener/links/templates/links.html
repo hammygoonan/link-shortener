@@ -3,11 +3,24 @@
 {% block content %}
 <h1>Your Links</h1>
 {% if links %}
-    <ul>
-        {% for link in links %}
-            <li><a href="{{ link.url }}">{{ link.url }}</a></li>
-        {% endfor %}
-    </ul>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Url</th>
+                <th>Shortened Link</th>
+                <th>status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for link in links %}
+                <tr>
+                    <td><a href="{{ config.get('DOMAIN_NAME') }}{{ link.url }}">{{ link.url }}</a></td>
+                    <td><a href="{{ config.get('DOMAIN_NAME') }}{{ link.slug }}">{{ link.slug }}</a></td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% else %}
     <p>Your don't appear to have any links. <a href="{{ url_for('links.add') }}">Click here</a> to add a link.</p>
 {% endif %}

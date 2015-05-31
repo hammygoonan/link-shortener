@@ -96,15 +96,17 @@ class Link(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    slug = db.Column(db.String, unique=True)
     status = db.Column(db.String)
     title = db.Column(db.String)
 
     user = db.relationship('User')
 
-    def __init__(self, url, user, status=None, title=None):
+    def __init__(self, url, slug, user, status=None, title=None):
         """Initialise model."""
         self.url = url
         self.user = user
+        self.slug = slug
         self.status = status
         self.title = title
 
