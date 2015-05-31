@@ -17,4 +17,5 @@
 	<button class="form-control" type="submit" class="btn btn-default">Submit</button>
 </form>
 <p><a href="{{ url_for('users.forgot_password') }}">Forgot password?</a></p>
+<p><strong>This site is invitation only.</strong> For an invitation please email <a href="mailto:{{ config.get('ADMIN_EMAIL') }}">{{ config.get('ADMIN_EMAIL') }}</a></p>
 {% endblock %}

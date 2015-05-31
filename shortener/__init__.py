@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Module init file. Runs application."""
 
-from flask import Flask
+from flask import Flask, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.login import LoginManager
@@ -36,6 +36,12 @@ from shortener.models import User
 
 login_manager.login_view = "users.login"
 login_manager.login_message = "Please login to view that page."
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Render 404 page template."""
+    return render_template('404.html'), 404
 
 
 @login_manager.user_loader

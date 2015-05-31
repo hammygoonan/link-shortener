@@ -4,7 +4,8 @@
 
 
 from flask import render_template, Blueprint, request, redirect, url_for
-from flask.ext.login import login_required
+from flask.ext.login import login_required, current_user
+from shortener.models import Link
 
 links_blueprint = Blueprint(
     'links', __name__,
@@ -12,15 +13,22 @@ links_blueprint = Blueprint(
 )
 
 
-@links_blueprint.route('/links', methods=['GET', 'POST'])
+@links_blueprint.route('/list')
 @login_required
 def list():
+    """Page with list of links."""
+    links = Link.query.filter_by(user_id=current_user.id).all()
+    return render_template('links.html', links=links)
+
+
+@links_blueprint.route('/add', methods=['GET', 'POST'])
+@login_required
+def add():
     """Page with list of links and a form to add links."""
     if request.method == "POST":
         pass
 
-    return render_template('links.html')
-
+    return render_template('add.html')
 
 @links_blueprint.route('/')
 def home():
