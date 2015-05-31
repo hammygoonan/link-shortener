@@ -103,7 +103,8 @@ def forgot_password():
             </html>
             """.format(reset_url,
                        reset_url)
-            email = Emailer(user.email, 'h@hgoo.me', 'Email reset', message)
+            email = Emailer(user.email, app.config.get('ADMIN_EMAIL'),
+                            'Email reset', message)
             email.send()
             flash('Your password has been reset, please check your email.')
 

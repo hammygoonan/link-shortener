@@ -3,7 +3,7 @@
 """links/views.py: Links views."""
 
 
-from flask import render_template, Blueprint, request
+from flask import render_template, Blueprint, request, redirect, url_for
 from flask.ext.login import login_required
 
 links_blueprint = Blueprint(
@@ -21,8 +21,14 @@ def list():
 
     return render_template('links.html')
 
-#
-# @links_blueprint.route('/<path:path>')
-# def redirect(path):
-#     """Redirector, and logger of links."""
-#     return path
+
+@links_blueprint.route('/')
+def home():
+    """Redirector, and logger of links."""
+    return redirect(url_for('users.login'))
+
+
+@links_blueprint.route('/<path:path>')
+def redirect_link(path):
+    """Redirector, and logger of links."""
+    return path

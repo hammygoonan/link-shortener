@@ -5,13 +5,35 @@
 from tests.base import BaseTestCase
 from flask.ext.login import current_user
 from shortener import bcrypt
+from shortener.emailer.emailer import Emailer
 from shortener.models import User, ResetPassword
 from flask import url_for
+from mock import patch
 
 
 class UsersTestCase(BaseTestCase):
 
     """User test cases."""
+
+    def setUp(self):
+        """Setup User tests."""
+        self.email = 'test_1@example.com'
+        self.password = 'password'
+
+        self.new_email = 'test_2@example.com'
+        self.new_password = 'new_password'
+
+        self.other_email = 'test_3@example.com'
+        self.other_password = 'other_password'
+
+        self.invite_email = 'test_4@example.com'
+        self.invite_code = 'invite_code'
+        self.invite_password = 'invite_password'
+
+        self.err_email = 'error@example.com'
+        self.err_password = 'abc'
+
+        super().setUp()
 
     def test_login_page(self):
         """Test login page."""
@@ -26,14 +48,14 @@ class UsersTestCase(BaseTestCase):
                 url_for('users.login'),
                 follow_redirects=True,
                 data={
-                    'email': 'hammy@spiresoftware.com.au',
-                    'password': 'password'
+                    'email': self.email,
+                    'password': self.password
                 },
             )
             self.assertEqual(response.status_code, 200)
             self.assertIn(b'Link', response.data)
             self.assertTrue(current_user.is_active())
-            self.assertTrue(current_user.email == 'hammy@spiresoftware.com.au')
+            self.assertTrue(current_user.email == self.email)
 
     def test_cant_login(self):
         """Test that can't login with incorrect details and flash message."""
@@ -42,8 +64,8 @@ class UsersTestCase(BaseTestCase):
                 '/users/login',
                 follow_redirects=True,
                 data=dict(
-                    email='hammy1@spiresoftware.com.au',
-                    password='123'
+                    email=self.err_email,
+                    password=self.err_password
                 ),
             )
             self.assertEqual(response.status_code, 200)
@@ -56,8 +78,9 @@ class UsersTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Register', response.data)
 
-    def test_forgot_password_page(self):
-        """Test forgot password page."""
+    @patch.object(Emailer, 'send')
+    def test_forgot_password_page(self, mock_send):
+        """Test forgot password page with mocked Emailer."""
         response = self.client.get('/users/forgot_password')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Forgot Password', response.data)
@@ -65,13 +88,13 @@ class UsersTestCase(BaseTestCase):
             response = self.client.post(
                 '/users/forgot_password',
                 data={
-                    'email': 'hammy@spiresoftware.com.au',
+                    'email': self.email,
                 },
                 follow_redirects=True
             )
             self.assertIn('Your password has been reset, please check your ' +
                           'email.', str(response.data))
-            user = User.query.filter_by(email='hammy@spiresoftware.com.au')\
+            user = User.query.filter_by(email=self.email)\
                 .first()
             self.assertTrue(
                 ResetPassword.query.filter_by(user_id=user.id)
@@ -80,7 +103,7 @@ class UsersTestCase(BaseTestCase):
             response = self.client.post(
                 '/users/forgot_password',
                 data={
-                    'email': 'abc@spiresoftware.com.au',
+                    'email': self.err_email,
                 },
                 follow_redirects=True
             )
@@ -115,7 +138,7 @@ class UsersTestCase(BaseTestCase):
             response = self.client.post(
                 '/users/reset_password/resetcode',
                 data={
-                    'password': 'new_password',
+                    'password': self.new_password,
                     'user_id': 1
                 },
                 follow_redirects=True
@@ -124,11 +147,11 @@ class UsersTestCase(BaseTestCase):
             self.assertTrue(b'Your password has been reset, please login ' +
                             b'below', response.data)
             # check password has changed
-            user = User.query.filter_by(email='hammy@spiresoftware.com.au')\
+            user = User.query.filter_by(email=self.email)\
                 .first()
             self.assertTrue(
                 bcrypt.check_password_hash(
-                    user.password, 'new_password'
+                    user.password, self.new_password
                 )
             )
         # check it breaks if link has expired.
@@ -147,8 +170,8 @@ class UsersTestCase(BaseTestCase):
             self.client.post(
                 '/users/login',
                 data={
-                    'email': 'hammy@spiresoftware.com.au',
-                    'password': 'password'
+                    'email': self.email,
+                    'password': self.password
                 },
                 follow_redirects=True
             )
@@ -162,8 +185,8 @@ class UsersTestCase(BaseTestCase):
             response = self.client.post(
                 '/users/login',
                 data={
-                    'email': 'hammy@spiresoftware.com.au',
-                    'password': 'password'
+                    'email': self.email,
+                    'password': self.password
                 },
                 follow_redirects=True
             )
@@ -182,26 +205,27 @@ class UsersTestCase(BaseTestCase):
             response = self.client.post(
                 '/users/login',
                 data={
-                    'email': 'hammy@spiresoftware.com.au',
-                    'password': 'password'
+                    'email': self.email,
+                    'password': self.password
                 },
                 follow_redirects=True
             )
-            self.assertTrue(current_user.email == 'hammy@spiresoftware.com.au')
+            self.assertTrue(current_user.email == self.email)
+            # update email
             response = self.client.post(
                 '/users/edit',
                 data={
-                    'email': 'hammy2@spiresoftware.com.au',
+                    'email': self.new_email,
                     'password': ''
                 },
                 follow_redirects=True
             )
             # check email has been updated
             self.assertTrue(current_user.email ==
-                            'hammy2@spiresoftware.com.au')
+                            self.new_email)
             # make sure password hasn't been updated
             password = bcrypt.check_password_hash(
-                current_user.password, 'password'
+                current_user.password, self.password
             )
             self.assertTrue(password)
             # check flash message
@@ -213,20 +237,20 @@ class UsersTestCase(BaseTestCase):
             response = self.client.post(
                 '/users/login',
                 data={
-                    'email': 'hammy@spiresoftware.com.au',
-                    'password': 'password'
+                    'email': self.email,
+                    'password': self.password
                 },
                 follow_redirects=True
             )
             user_password = bcrypt.check_password_hash(
-                current_user.password, 'password'
+                current_user.password, self.password
             )
             self.assertTrue(user_password)
             response = self.client.post(
                 '/users/edit',
                 data={
-                    'email': 'hammy@spiresoftware.com.au',
-                    'password': 'new_password'
+                    'email': self.email,
+                    'password': self.new_password
                 },
                 follow_redirects=True
             )
@@ -237,7 +261,7 @@ class UsersTestCase(BaseTestCase):
             self.assertTrue(new_password)
             # check email remains the same
             self.assertTrue(current_user.email ==
-                            'hammy@spiresoftware.com.au')
+                            self.email)
             # check flash message
             self.assertIn(b'Your details have been updated', response.data)
 
@@ -247,23 +271,23 @@ class UsersTestCase(BaseTestCase):
             response = self.client.post(
                 '/users/login',
                 data={
-                    'email': 'hammy@spiresoftware.com.au',
-                    'password': 'password'
+                    'email': self.email,
+                    'password': self.password
                 },
                 follow_redirects=True
             )
-            self.assertTrue(current_user.email == 'hammy@spiresoftware.com.au')
+            self.assertTrue(current_user.email == self.email)
             response = self.client.post(
                 '/users/edit',
                 data={
-                    'email': 'test@spiresoftware.com.au',
+                    'email': self.other_email,
                     'password': ''
                 },
                 follow_redirects=True
             )
             # check email has not been updated
             self.assertTrue(current_user.email ==
-                            'hammy@spiresoftware.com.au')
+                            self.email)
             # display flash message
             self.assertIn(b'That email address is already in use.',
                           response.data)
@@ -275,8 +299,8 @@ class UsersTestCase(BaseTestCase):
             response = self.client.post(
                 '/users/register',
                 data={
-                    'email': 'hammy2@spiresoftware.com.au',
-                    'password': 'password',
+                    'email': self.invite_email,
+                    'password': self.other_password,
                     'invite': ''
                 },
                 follow_redirects=True
@@ -287,9 +311,9 @@ class UsersTestCase(BaseTestCase):
             response = self.client.post(
                 '/users/register',
                 data={
-                    'email': 'hammy2@spiresoftware.com.au',
+                    'email': self.invite_email,
                     'password': '',
-                    'invite': 'invite_code'
+                    'invite': self.invite_code
                 },
                 follow_redirects=True
             )
@@ -300,8 +324,8 @@ class UsersTestCase(BaseTestCase):
                 '/users/register',
                 data={
                     'email': '',
-                    'password': 'password',
-                    'invite': 'invite_code'
+                    'password': self.invite_password,
+                    'invite': self.invite_code
                 },
                 follow_redirects=True
             )
@@ -314,9 +338,9 @@ class UsersTestCase(BaseTestCase):
         response = self.client.post(
             '/users/register',
             data={
-                'email': 'hammy2@spiresoftware.com.au',
-                'password': 'password',
-                'invite': 'invite'
+                'email': self.err_email,
+                'password': self.invite_password,
+                'invite': self.invite_code
             },
             follow_redirects=True
         )
@@ -326,9 +350,9 @@ class UsersTestCase(BaseTestCase):
         response = self.client.post(
             '/users/register',
             data={
-                'email': 'other@spiresoftware.com.au',
-                'password': 'password',
-                'invite': 'invite_code'
+                'email': self.err_email,
+                'password': self.password,
+                'invite': self.invite_code
             },
             follow_redirects=True
         )
@@ -338,9 +362,9 @@ class UsersTestCase(BaseTestCase):
         response = self.client.post(
             '/users/register',
             data={
-                'email': 'hammy2@spiresoftware.com.au',
-                'password': 'password',
-                'invite': 'invite_code'
+                'email': self.invite_email,
+                'password': self.invite_password,
+                'invite': self.invite_code
             },
             follow_redirects=True
         )

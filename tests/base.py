@@ -19,8 +19,6 @@ class BaseTestCase(TestCase):
 
     def setUp(self):
         """Setup tests."""
-        # db.create_all()
-        # db.session.commit()
         create_db()
 
     def tearDown(self):
