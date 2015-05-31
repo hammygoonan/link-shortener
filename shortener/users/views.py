@@ -4,11 +4,11 @@
 
 from flask import render_template, Blueprint, request, flash, redirect,\
     url_for
-from shortener.models import User
 from flask.ext.login import login_user, login_required, logout_user,\
     current_user
-from shortener import db, bcrypt
-from shortener.models import Invitation, User
+from shortener import db, bcrypt, random_str
+from shortener.models import User, Invitation, ResetPassword
+from datetime import datetime, timedelta
 
 users_blueprint = Blueprint(
     'users', __name__,
@@ -75,9 +75,43 @@ def register():
 def forgot_password():
     """Forgot password route."""
     if request.method == "POST":
-        pass
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash('Sorry, we don\'t have that email address in our system.')
+            return render_template('forgot_password.html')
+        else:
+            code = random_str(25)
+            expires = datetime.utcnow() + timedelta(hours=24)
+            db.session.add(ResetPassword(user, code, expires))
+            db.session.commit()
+            flash('Your password has been reset, please check your email.')
 
     return render_template('forgot_password.html')
+
+
+@users_blueprint.route('/reset_password/<path:path>', methods=['GET', 'POST'])
+def reset_password(path):
+    """Reset password route."""
+    if request.method == "POST":
+        password = request.form.get('password')
+        user = request.form.get('user_id')
+        if password and user:
+            user = User.query.get(user)
+            user.password = bcrypt.generate_password_hash(password)
+            db.session.commit()
+            flash('Your password has been updated. Please login below.')
+            return redirect(url_for('users.login'))
+        else:
+            flash('Sorry, something\'s not right here. Did you enter and '
+                  'email address?.')
+
+    reset = ResetPassword.query.filter_by(code=path).first_or_404()
+    # moke sure link not expired
+    if reset.expires < datetime.utcnow():
+        flash('That link has expired. Please reset your password again.')
+        return redirect(url_for('users.forgot_password'))
+    return render_template('reset_password.html', user=reset.user_id)
 
 
 @users_blueprint.route('/edit', methods=['GET', 'POST'])

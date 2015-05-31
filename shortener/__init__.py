@@ -6,6 +6,8 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.login import LoginManager
+import random
+import string
 
 
 app = Flask(__name__)
@@ -14,6 +16,14 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 app.config.from_object('config.DevelopmentConfig')
 db = SQLAlchemy(app)
+
+
+# helpers
+def random_str(N=10):
+    """Return random string of length N."""
+    return ''.join(random.SystemRandom().choice(
+        string.ascii_uppercase + string.ascii_lowercase + string.digits
+    ) for _ in range(N))
 
 from shortener.users.views import users_blueprint
 from shortener.links.views import links_blueprint

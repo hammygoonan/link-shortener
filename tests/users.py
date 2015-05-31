@@ -5,6 +5,7 @@
 from tests.base import BaseTestCase
 from flask.ext.login import current_user
 from shortener import bcrypt
+from shortener.models import User, ResetPassword
 from flask import url_for
 
 
@@ -60,6 +61,85 @@ class UsersTestCase(BaseTestCase):
         response = self.client.get('/users/forgot_password')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Forgot Password', response.data)
+        with self.client:
+            response = self.client.post(
+                '/users/forgot_password',
+                data={
+                    'email': 'hammy@spiresoftware.com.au',
+                },
+                follow_redirects=True
+            )
+            self.assertIn('Your password has been reset, please check your ' +
+                          'email.', str(response.data))
+            user = User.query.filter_by(email='hammy@spiresoftware.com.au')\
+                .first()
+            self.assertTrue(
+                ResetPassword.query.filter_by(user_id=user.id)
+            )
+        with self.client:
+            response = self.client.post(
+                '/users/forgot_password',
+                data={
+                    'email': 'abc@spiresoftware.com.au',
+                },
+                follow_redirects=True
+            )
+            self.assertIn('Sorry, we don&#39;t have that email address in ' +
+                          'our system.', str(response.data))
+
+    def test_reset_password_page(self):
+        """Test reset password."""
+        # should be a 404 if code is not recognised
+        response = self.client.get('/users/reset_password/thisisacode')
+        self.assert404(response)
+        # check user_id is set
+        with self.client:
+            response = self.client.get('/users/reset_password/resetcode')
+            self.assertIn(b'<input type="hidden" name="user_id" value="1" />',
+                          response.data)
+        # should not update if no password provided
+        with self.client:
+            response = self.client.post(
+                '/users/reset_password/resetcode',
+                data={
+                    'password': '',
+                },
+                follow_redirects=True
+            )
+            self.assert200(response)
+            self.assertTrue(b'Sorry, something&#39;s not right here. Did ' +
+                            b'you enter and email address?.', response.data)
+
+        # should update password if code is recongnised
+        with self.client:
+            response = self.client.post(
+                '/users/reset_password/resetcode',
+                data={
+                    'password': 'new_password',
+                    'user_id': 1
+                },
+                follow_redirects=True
+            )
+            self.assert200(response)
+            self.assertTrue(b'Your password has been reset, please login ' +
+                            b'below', response.data)
+            # check password has changed
+            user = User.query.filter_by(email='hammy@spiresoftware.com.au')\
+                .first()
+            self.assertTrue(
+                bcrypt.check_password_hash(
+                    user.password, 'new_password'
+                )
+            )
+        # check it breaks if link has expired.
+        with self.client:
+            response = self.client.get(
+                '/users/reset_password/resetcode2',
+                follow_redirects=True
+            )
+            self.assert200(response)
+            self.assertTrue(b'That link has expired. Please reset your ' +
+                            b'password again.', response.data)
 
     def test_edit_page(self):
         """Test user edit page."""
@@ -240,8 +320,8 @@ class UsersTestCase(BaseTestCase):
             },
             follow_redirects=True
         )
-        self.assertIn('Sorry, we don&#39;t have a invite that matches that email '
-                      'address and invitation code.', str(response.data))
+        self.assertIn('Sorry, we don&#39;t have a invite that matches that '
+                      'email address and invitation code.', str(response.data))
         # email wrong
         response = self.client.post(
             '/users/register',
@@ -252,8 +332,8 @@ class UsersTestCase(BaseTestCase):
             },
             follow_redirects=True
         )
-        self.assertIn('Sorry, we don&#39;t have a invite that matches that email '
-                      'address and invitation code.', str(response.data))
+        self.assertIn('Sorry, we don&#39;t have a invite that matches that '
+                      'email address and invitation code.', str(response.data))
         # correct details
         response = self.client.post(
             '/users/register',
