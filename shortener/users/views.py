@@ -6,8 +6,9 @@ from flask import render_template, Blueprint, request, flash, redirect,\
     url_for
 from flask.ext.login import login_user, login_required, logout_user,\
     current_user
-from shortener import db, bcrypt, random_str
+from shortener import app, db, bcrypt, random_str
 from shortener.models import User, Invitation, ResetPassword
+from shortener.emailer.emailer import Emailer
 from datetime import datetime, timedelta
 
 users_blueprint = Blueprint(
@@ -85,6 +86,25 @@ def forgot_password():
             expires = datetime.utcnow() + timedelta(hours=24)
             db.session.add(ResetPassword(user, code, expires))
             db.session.commit()
+            reset_url = '{}users/reset_password/{}'.format(
+                app.config['DOMAIN_NAME'],
+                code
+            )
+            # send email
+            message = """\
+            <html>
+                <head></head>
+                <body>
+                    <p>Hello,</p>
+                    <p>Someone has requested an email reset.
+                    <p>If that was you, please go to <a href="{}">{}</a>.</p>
+                    <p>If it was not you, please just ignore this email.</p>
+                </body>
+            </html>
+            """.format(reset_url,
+                       reset_url)
+            email = Emailer(user.email, 'h@hgoo.me', 'Email reset', message)
+            email.send()
             flash('Your password has been reset, please check your email.')
 
     return render_template('forgot_password.html')

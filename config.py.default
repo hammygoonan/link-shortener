@@ -9,6 +9,13 @@ class BaseConfig(object):
 
     DEBUG = False
     SECRET_KEY = 'REPLACE WITH VERY SECRET KEY'
+    DOMAIN_NAME = 'http://example.com/'
+    SMTP_HOST = 'localhost'
+    SMTP_PORT = None
+    SMTP_USER = None
+    SMTP_PASSWORD = None
+    SMTP_SSL = False
+    SMTP_REQUIRE_PASSWORD = False
 
 
 class TestConfig(BaseConfig):

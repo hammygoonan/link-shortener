@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Base testing module that other tests extend from."""
+
 
 from flask.ext.testing import TestCase
 from shortener import app, db
