@@ -26,7 +26,7 @@ def login():
             user.password, request.form['password']
         ):
             login_user(user)
-            return redirect(url_for('links.list'))
+            return redirect(url_for('links.add'))
 
         else:
             flash('Invalid username or password.')

@@ -74,6 +74,8 @@ def add():
 @links_blueprint.route('/')
 def home():
     """Redirector, and logger of links."""
+    if current_user.is_authenticated():
+        return redirect(url_for('links.add'))
     return redirect(url_for('users.login'))
 
 
