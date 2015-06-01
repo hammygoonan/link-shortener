@@ -75,7 +75,7 @@ def add():
 def home():
     """Redirector, and logger of links."""
     if current_user.is_authenticated():
-        redirect(url_for('links.add'))
+        return redirect(url_for('links.add'))
     return redirect(url_for('users.login'))
 
 
