@@ -30,12 +30,12 @@ class LinkTestCase(BaseTestCase):
     def test_number_of_links_on_page(self):
         """Test that there is the corect number of links on the page."""
         with self.client:
-            response = self.client.post(
+            self.client.post(
                 '/users/login',
                 data={'email': self.email, 'password': self.password},
                 follow_redirects=True
             )
-
+            response = self.client.get('/list')
             self.assertIn(b'http://example.com', response.data)
             self.assertIn(b'http://google.com', response.data)
             self.assertIn(b'https://news.ycombinator.com', response.data)
