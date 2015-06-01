@@ -1,9 +1,14 @@
+footer{
+    text-align: center;
+}
 .user-menu{
     list-style-type: none;
-    text-align: center;
     padding: 0;
 }
 .user-menu li {
     display: inline-block;
     padding: 10px 20px;
+}
+form{
+    margin-bottom: 20px;
 }

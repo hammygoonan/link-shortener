@@ -1,7 +1,8 @@
 {% if current_user.is_authenticated() %}
-  <ul class="user-menu">
-      <li><a href="{{ url_for('links.list') }}">Add link</a></li>
-      <li><a href="{{ url_for('links.list') }}">Link list</a></li>
-      <li><a href="{{ url_for('users.edit') }}">Settings</a></li>
-      <li><a href="{{ url_for('users.logout') }}">Logout</a></li>
+    <ul class="user-menu">
+        <li><a href="{{ url_for('links.list') }}">Add link</a></li>
+        <li><a href="{{ url_for('links.list') }}">Link list</a></li>
+        <li><a href="{{ url_for('users.edit') }}">Settings</a></li>
+        <li><a href="{{ url_for('users.logout') }}">Logout</a></li>
+    </ul>
 {% endif %}

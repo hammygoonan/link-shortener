@@ -99,6 +99,8 @@ def forgot_password():
                     <p>Someone has requested an email reset.
                     <p>If that was you, please go to <a href="{}">{}</a>.</p>
                     <p>If it was not you, please just ignore this email.</p>
+                    <p>Please note that replies to this email are unlikely to
+                    be read in a timely fashion if at all.</p>
                 </body>
             </html>
             """.format(reset_url,
