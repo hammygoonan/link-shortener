@@ -12,3 +12,14 @@ footer{
 form{
     margin-bottom: 20px;
 }
+.clipboard{
+    background-image: url('/static/images/clipboard.svg');
+    background-size: 20px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    display: inline-block;
+    margin-bottom: -11px;
+    background-repeat: no-repeat;
+    background-position: center center;
+}

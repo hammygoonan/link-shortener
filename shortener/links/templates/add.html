@@ -6,7 +6,11 @@
     <p class="has-error">{{ message }}</p>
 {% endfor %}
 {% if link %}
-    <p>Your link is: <strong><a href="{{ config.get('DOMAIN_NAME') }}{{ link.slug }}">{{ config.get('DOMAIN_NAME') }}{{ link.slug }}</a></strong></p>
+    <div class="form-inline"
+        <label for="short-link">Your link is:</label>
+        <input type="text" name="short-link" value="{{ config.get('DOMAIN_NAME') }}{{ link.slug }}" class="form-control" id="short-link"/>
+        <span onClick="document.getElementById('short-link').select()" class="clipboard"></span>
+    </div>
 {% endif %}
 <form id="links-form" method="post" action="{{ url_for('links.add') }}">
     <div class="form-group">
