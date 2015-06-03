@@ -8,6 +8,7 @@ from flask.ext.bcrypt import Bcrypt
 from flask.ext.login import LoginManager
 import random
 import string
+import re
 
 
 app = Flask(__name__)
@@ -24,6 +25,13 @@ def random_str(N=10):
     return ''.join(random.SystemRandom().choice(
         string.ascii_uppercase + string.ascii_lowercase + string.digits
     ) for _ in range(N))
+
+
+def is_email(email):
+    """Validate that an email is syntactially correct."""
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return False
+    return True
 
 from shortener.users.views import users_blueprint
 from shortener.links.views import links_blueprint

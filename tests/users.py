@@ -6,7 +6,7 @@ from tests.base import BaseTestCase
 from flask.ext.login import current_user
 from shortener import bcrypt
 from shortener.emailer.emailer import Emailer
-from shortener.models import User, ResetPassword
+from shortener.models import User, ResetPassword, Invitation
 from flask import url_for
 from mock import patch
 
@@ -335,6 +335,71 @@ class UsersTestCase(BaseTestCase):
         )
         self.assertIn('Thanks for signing up! Please login below.',
                       str(response.data))
+
+    def test_invite_page(self):
+        """Test invite page."""
+        with self.client:
+            self.login()
+            response = self.client.get(
+                url_for('users.invitation')
+            )
+            self.assertIn(b'Invite someone to join', response.data)
+
+    def test_valid_email_for_invitation(self):
+        """Test invitations can't be sent to dodgy emails addresses."""
+        with self.client:
+            self.login()
+            response = self.client.post(
+                url_for('users.invitation'),
+                data={'email': 'Not an email address'},
+                follow_redirects=True
+            )
+            self.assertIn(
+                'That email doesn&#39;t look like an email address...',
+                str(response.data))
+
+    # @patch.object(Emailer, 'send')
+    def test_can_add_invition(self):
+        """Test user can invite someone."""
+        with self.client:
+            self.login()
+            response = self.client.post(
+                url_for('users.invitation'),
+                data={'email': 'general@email.com'},
+                follow_redirects=True
+            )
+            self.assertIn(
+                b'general@email.com has been sent an invitation.',
+                response.data)
+            self.assertTrue(
+                Invitation.query.filter_by(email=self.invite_email).first())
+
+    def test_cant_add_invition_if_already_invited(self):
+        """Test someone can't be invited more than once."""
+        with self.client:
+            self.login()
+            response = self.client.post(
+                url_for('users.invitation'),
+                data={'email': self.invite_email},
+                follow_redirects=True
+            )
+            self.assertIn(
+                '{} has already been sent an invitation.'.format(
+                    self.invite_email),
+                str(response.data))
+
+            # current user
+            response = self.client.post(
+                url_for('users.invitation'),
+                data={'email': self.other_email},
+                follow_redirects=True
+            )
+            self.assertIn(
+                '{} has already been sent an invitation.'.format(
+                    self.other_email),
+                str(response.data))
+            self.assertTrue(
+                Invitation.query.filter_by(email=self.invite_email).first())
 
     def login(self):
         """Login to site."""

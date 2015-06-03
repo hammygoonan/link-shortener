@@ -17,6 +17,7 @@ class BaseConfig(object):
     SMTP_SSL = False
     SMTP_REQUIRE_PASSWORD = False
     ADMIN_EMAIL = 'hello@example.com'
+    CONTACT_EMAIL = 'hello@example.com'
     LOG_FILE = 'requests.log'
 
 

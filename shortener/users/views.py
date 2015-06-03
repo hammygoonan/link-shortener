@@ -6,7 +6,7 @@ from flask import render_template, Blueprint, request, flash, redirect,\
     url_for
 from flask.ext.login import login_user, login_required, logout_user,\
     current_user
-from shortener import app, db, bcrypt, random_str
+from shortener import app, db, bcrypt, random_str, is_email
 from shortener.models import User, Invitation, ResetPassword
 from shortener.emailer.emailer import Emailer
 from datetime import datetime, timedelta
@@ -96,15 +96,14 @@ def forgot_password():
                 <head></head>
                 <body>
                     <p>Hello,</p>
-                    <p>Someone has requested an email reset.
+                    <p>Someone has requested an email reset.</p>
                     <p>If that was you, please go to <a href="{}">{}</a>.</p>
                     <p>If it was not you, please just ignore this email.</p>
                     <p>Please note that replies to this email are unlikely to
                     be read in a timely fashion if at all.</p>
                 </body>
             </html>
-            """.format(reset_url,
-                       reset_url)
+            """.format(reset_url, reset_url)
             email = Emailer(user.email, app.config.get('ADMIN_EMAIL'),
                             'Email reset', message)
             email.send()
@@ -159,3 +158,53 @@ def edit():
             db.session.commit()
             flash('Your details have been updated')
     return render_template('edit.html', user=current_user)
+
+
+@users_blueprint.route('/invitation', methods=['GET', 'POST'])
+@login_required
+def invitation():
+    """Invitation route."""
+    if request.method == "POST":
+        email = request.form.get('email')
+        if not is_email(email):
+            flash('That email doesn\'t look like an email address...')
+            return render_template('invitation.html')
+        if not email:
+            flash('Aren\'t you forgetting something?')
+            return render_template('invitation.html')
+        invite = Invitation.query.filter_by(email=email).first()
+        current_user = User.query.filter_by(email=email).first()
+        if invite or current_user:
+            flash('{} has already been sent an invitation.'.format(email))
+            return render_template('invitation.html')
+        code = random_str()
+        db.session.add(Invitation(email, code))
+        db.session.commit()
+        invite_url = '{}users/register'.format(
+            app.config.get('DOMAIN_NAME'))
+        flash('{} has been sent an invitation.'.format(email))
+
+        # send email
+        message = """\
+        <html>
+            <head></head>
+            <body>
+                <p>Hello,</p>
+                <p>Someone has been kind enough to send you an
+                invitation to {}.</p>
+                <p>To activate your account go to:
+                <a href="{}">{}</a>. and end the code '{}'</p>
+                <p>Please note that replies to this email are unlikely
+                to be read in a timely fashion if at all.</p>
+            </body>
+        </html>
+        """.format(app.config.get('DOMAIN_NAME'),
+                   invite_url, invite_url, code)
+        email = Emailer(
+            email,
+            app.config.get('ADMIN_EMAIL'),
+            '{} invitation'.format(app.config.get('DOMAIN_NAME')),
+            message
+        )
+        email.send()
+    return render_template('invitation.html')
