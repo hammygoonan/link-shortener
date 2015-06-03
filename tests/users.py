@@ -44,14 +44,7 @@ class UsersTestCase(BaseTestCase):
     def test_can_login(self):
         """Test user can login."""
         with self.client:
-            response = self.client.post(
-                url_for('users.login'),
-                follow_redirects=True,
-                data={
-                    'email': self.email,
-                    'password': self.password
-                },
-            )
+            response = self.login()
             self.assertEqual(response.status_code, 200)
             self.assertIn(b'Link', response.data)
             self.assertTrue(current_user.is_active())
@@ -167,14 +160,7 @@ class UsersTestCase(BaseTestCase):
     def test_edit_page(self):
         """Test user edit page."""
         with self.client:
-            self.client.post(
-                '/users/login',
-                data={
-                    'email': self.email,
-                    'password': self.password
-                },
-                follow_redirects=True
-            )
+            self.login()
             response = self.client.get('/users/edit')
             self.assertEqual(response.status_code, 200)
             self.assertIn(b'Edit your details', response.data)
@@ -182,14 +168,7 @@ class UsersTestCase(BaseTestCase):
     def test_logout(self):
         """Test user can logout."""
         with self.client:
-            response = self.client.post(
-                '/users/login',
-                data={
-                    'email': self.email,
-                    'password': self.password
-                },
-                follow_redirects=True
-            )
+            self.login()
             response = self.client.get('/users/logout', follow_redirects=True)
             self.assertIn(b'You were logged out', response.data)
             self.assertFalse(current_user.is_active())
@@ -234,14 +213,7 @@ class UsersTestCase(BaseTestCase):
     def test_user_can_change_password(self):
         """Test that user can change password."""
         with self.client:
-            response = self.client.post(
-                '/users/login',
-                data={
-                    'email': self.email,
-                    'password': self.password
-                },
-                follow_redirects=True
-            )
+            self.login()
             user_password = bcrypt.check_password_hash(
                 current_user.password, self.password
             )
@@ -268,14 +240,7 @@ class UsersTestCase(BaseTestCase):
     def test_user_unique_when_editing(self):
         """Test that email being edited is unique and email is not updated."""
         with self.client:
-            response = self.client.post(
-                '/users/login',
-                data={
-                    'email': self.email,
-                    'password': self.password
-                },
-                follow_redirects=True
-            )
+            self.login()
             self.assertTrue(current_user.email == self.email)
             response = self.client.post(
                 '/users/edit',
@@ -370,3 +335,14 @@ class UsersTestCase(BaseTestCase):
         )
         self.assertIn('Thanks for signing up! Please login below.',
                       str(response.data))
+
+    def login(self):
+        """Login to site."""
+        return self.client.post(
+            url_for('users.login'),
+            follow_redirects=True,
+            data={
+                'email': self.email,
+                'password': self.password
+            },
+        )
