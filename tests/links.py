@@ -59,7 +59,8 @@ class LinkTestCase(BaseTestCase):
                 '/add',
                 data={'url': 'http://newlink.com'}
             )
-            self.assertIn(b'Your link was added.', response.data)
+            self.assertIn(b'Your link was added - http://newlink.com',
+                          response.data)
             self.assertTrue(
                 Link.query.filter_by(
                     user_id=current_user.id, url='http://newlink.com'
@@ -82,8 +83,8 @@ class LinkTestCase(BaseTestCase):
                 '/add',
                 data={'url': 'http://newlink.com'}
             )
-            self.assertIn(b'This link has already been added by you in the ' +
-                          b'past.', response.data)
+            self.assertIn(b'http://newlink.com - has been added previously.',
+                          response.data)
             self.assertTrue(1 == len(Link.query.filter_by(
                                      user_id=current_user.id,
                                      url='http://newlink.com').all()))

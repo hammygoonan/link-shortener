@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Your Links</h1>
 {% if links %}
-    <table class="table">
+    <table class="table link-table">
         <thead>
             <tr>
                 <th>Url</th>
@@ -15,7 +15,12 @@
             {% for link in links %}
                 <tr>
                     <td><a href="{{ config.get('DOMAIN_NAME') }}{{ link.url }}">{{ link.url }}</a></td>
-                    <td><a href="{{ config.get('DOMAIN_NAME') }}{{ link.slug }}">{{ link.slug }}</a></td>
+                    <td>
+                        <div class="form-inline">
+                            <input type="text" name="short-link" value="{{ config.get('DOMAIN_NAME') }}{{ link.slug }}" class="form-control" id="short-link" />
+                            <span onClick="document.getElementById('short-link').select()" class="clipboard"></span>
+                        </div>
+                    </td>
                     <td></td>
                 </tr>
             {% endfor %}

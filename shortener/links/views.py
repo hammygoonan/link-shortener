@@ -52,7 +52,7 @@ def add():
         pre_existing = Link.query.filter_by(
             user_id=current_user.id, url=url).first()
         if pre_existing:
-            flash('This link has already been added by you in the past.')
+            flash('{} - has been added previously.'.format(url))
             link = pre_existing
         else:
             # get unique slug
@@ -66,7 +66,7 @@ def add():
             link = Link(url, slug, current_user)
             db.session.add(link)
             db.session.commit()
-            flash('Your link was added.')
+            flash('Your link was added - {}.'.format(url))
 
     return render_template('add.html', link=link)
 
