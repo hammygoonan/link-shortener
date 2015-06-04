@@ -257,6 +257,46 @@ class UsersTestCase(BaseTestCase):
             self.assertIn(b'That email address is already in use.',
                           response.data)
 
+    def test_user_email_valid_when_editing(self):
+        with self.client:
+            self.login()
+            # no email address
+            response = self.client.post(
+                '/users/edit',
+                data={
+                    'email': '',
+                    'password': ''
+                },
+                follow_redirects=True
+            )
+            # display flash message
+            self.assertIn(b'Please enter a valid email address.',
+                          response.data)
+            # invalid email address
+            response = self.client.post(
+                '/users/edit',
+                data={
+                    'email': 'not an email',
+                    'password': ''
+                },
+                follow_redirects=True
+            )
+            # display flash message
+            self.assertIn(b'Please enter a valid email address.',
+                          response.data)
+            # change email but not password
+            response = self.client.post(
+                '/users/edit',
+                data={
+                    'email': '',
+                    'password': 'new password'
+                },
+                follow_redirects=True
+            )
+            # display flash message
+            self.assertIn(b'Please enter a valid email address.',
+                          response.data)
+
     def test_user_cannt_register_without_all_fields(self):
         """Check all fields are required for user registration."""
         with self.client:
