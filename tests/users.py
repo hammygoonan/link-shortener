@@ -398,8 +398,8 @@ class UsersTestCase(BaseTestCase):
                 'That email doesn&#39;t look like an email address...',
                 str(response.data))
 
-    # @patch.object(Emailer, 'send')
-    def test_can_add_invition(self):
+    @patch.object(Emailer, 'send')
+    def test_can_add_invition(self, mock_send):
         """Test user can invite someone."""
         with self.client:
             self.login()

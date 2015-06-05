@@ -58,7 +58,8 @@ def add():
             # get unique slug
             unique_slug = None
             while not unique_slug:
-                slug = random_str(6)
+                # (26 + 26 + 10) ** 4 =  14,776,336 - that's unique enough
+                slug = random_str(4)
                 if not Link.query.filter_by(slug=slug).first():
                     unique_slug = slug
 
