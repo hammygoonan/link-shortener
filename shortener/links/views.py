@@ -84,9 +84,13 @@ def home():
 def redirect_link(path):
     """Redirector, and logger of links."""
     link = Link.query.filter_by(slug=path).first_or_404()
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
     log_entry = '{}\t{}\t{}\t{}\n'.format(
         datetime.now(), link.url,
-        request.environ.get('REMOTE_ADDR', request.remote_addr),
+        str(ip),
         request.headers.get('User-Agent'))
 
     with open(app.config.get('LOG_FILE'), 'a') as f:
