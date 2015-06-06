@@ -17,8 +17,8 @@
                     <td><a href="{{ config.get('DOMAIN_NAME') }}{{ link.url }}">{{ link.url }}</a></td>
                     <td>
                         <div class="form-inline">
-                            <input type="text" name="short-link" value="{{ config.get('DOMAIN_NAME') }}{{ link.slug }}" class="form-control" id="short-link" />
-                            <span onClick="document.getElementById('short-link').select()" class="clipboard"></span>
+                            <input type="text" name="short-link" value="{{ config.get('DOMAIN_NAME') }}{{ link.slug }}" class="form-control" />
+                            <span onClick="this.previousElementSibling.select();" class="clipboard"></span>
                         </div>
                     </td>
                     <td></td>

@@ -9,7 +9,7 @@
     <div class="form-inline"
         <label for="short-link">Your link is:</label>
         <input type="text" name="short-link" value="{{ config.get('DOMAIN_NAME') }}{{ link.slug }}" class="form-control" id="short-link"/>
-        <span onClick="document.getElementById('short-link').select()" class="clipboard"></span>
+        <span onClick="this.previousElementSibling.select();" class="clipboard"></span>
     </div>
 {% endif %}
 <form id="links-form" method="post" action="{{ url_for('links.add') }}">
