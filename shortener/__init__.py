@@ -9,13 +9,14 @@ from flask.ext.login import LoginManager
 import random
 import string
 import re
+import os
 
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-app.config.from_object('config.DevelopmentConfig')
+app.config.from_object(os.environ['APP_SETTINGS'])
 db = SQLAlchemy(app)
 
 
