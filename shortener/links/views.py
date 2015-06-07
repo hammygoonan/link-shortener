@@ -10,6 +10,8 @@ from flask.ext.login import login_required, current_user
 from shortener import app, db, random_str
 from shortener.models import Link
 from datetime import datetime
+import requests
+from bs4 import BeautifulSoup
 
 links_blueprint = Blueprint(
     'links', __name__,
@@ -64,7 +66,10 @@ def add():
                     unique_slug = slug
 
             # add link
-            link = Link(url, slug, current_user)
+            response = requests.get(url)
+            soup = BeautifulSoup(response.content)
+            link = Link(url, slug, current_user, response.status_code,
+                        soup.title.string)
             db.session.add(link)
             db.session.commit()
             flash('Your link was added - {}.'.format(url))

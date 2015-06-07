@@ -6,6 +6,9 @@
 from flask.ext.login import current_user
 from tests.base import BaseTestCase
 from shortener.models import Link
+from mock import patch
+from mock import MagicMock
+import requests
 
 
 class LinkTestCase(BaseTestCase):
@@ -46,8 +49,12 @@ class LinkTestCase(BaseTestCase):
             self.assertNotIn(b'http://test.com', response.data)
             self.assertNotIn(b'http://yahoo.com', response.data)
 
-    def test_add_links(self):
+    @patch.object(requests, 'get')
+    def test_add_links(self, get_mock):
         """Test the various combinations of adding links."""
+        get_mock.return_value = mock_get_response = MagicMock()
+        mock_get_response.content = "<title>this is some content</title>"
+        mock_get_response.status_code = 200
         with self.client:
             self.client.post(
                 '/users/login',
@@ -85,9 +92,13 @@ class LinkTestCase(BaseTestCase):
             )
             self.assertIn(b'http://newlink.com - has been added previously.',
                           response.data)
-            self.assertTrue(1 == len(Link.query.filter_by(
-                                     user_id=current_user.id,
-                                     url='http://newlink.com').all()))
+            new_link = Link.query.filter_by(user_id=current_user.id,
+                                            url='http://newlink.com').all()
+            self.assertTrue(1 == len(new_link))
+            self.assertTrue('this is some content' == new_link[0].title)
+
+            # todo: mock beautiful soup and requests to test that status and
+            # title are added
 
     def test_link_redirect(self):
         """Test redirects work."""
