@@ -97,9 +97,6 @@ class LinkTestCase(BaseTestCase):
             self.assertTrue(1 == len(new_link))
             self.assertTrue('this is some content' == new_link[0].title)
 
-            # todo: mock beautiful soup and requests to test that status and
-            # title are added
-
     def test_link_redirect(self):
         """Test redirects work."""
         with self.client:
